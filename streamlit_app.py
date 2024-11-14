@@ -8,21 +8,22 @@ class Device:
         self.config = "Default Config"
         self.status = 1  # 1: Online, 0: Offline
 
-# List to store devices
-devices = []
+# Initialize session state for devices
+if "devices" not in st.session_state:
+    st.session_state.devices = []
 
 # Function to add a new device
 def add_device(id, name):
-    if len(devices) >= 100:  # MAX_DEVICES = 100
+    if len(st.session_state.devices) >= 100:  # MAX_DEVICES = 100
         st.error("Device limit reached.")
         return
     new_device = Device(id, name)
-    devices.append(new_device)
+    st.session_state.devices.append(new_device)
     st.success(f"Device {name} added successfully.")
 
 # Function to update device configuration
 def update_config(id, config):
-    for device in devices:
+    for device in st.session_state.devices:
         if device.id == id:
             device.config = config
             st.success(f"Configuration updated for device {id}.")
@@ -31,7 +32,7 @@ def update_config(id, config):
 
 # Function to display all devices
 def display_devices():
-    if not devices:
+    if not st.session_state.devices:
         st.warning("No devices to display.")
         return
 
@@ -40,12 +41,12 @@ def display_devices():
         "Name": device.name,
         "Status": "Online" if device.status else "Offline",
         "Config": device.config
-    } for device in devices]
+    } for device in st.session_state.devices]
     st.table(data)
 
 # Function to set device status
 def set_device_status(id, status):
-    for device in devices:
+    for device in st.session_state.devices:
         if device.id == id:
             device.status = status
             st.success(f"Device {id} is now {'Online' if status else 'Offline'}.")
