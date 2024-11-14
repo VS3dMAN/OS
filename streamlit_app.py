@@ -23,9 +23,11 @@ def add_device(id, name):
 
 # Function to update device configuration
 def update_config(id, config):
-    for device in st.session_state.devices:
+    for idx, device in enumerate(st.session_state.devices):
         if device.id == id:
             device.config = config
+            # Reassign the updated device to session state
+            st.session_state.devices[idx] = device
             st.success(f"Configuration updated for device {id}.")
             return
     st.error(f"Device with ID {id} not found.")
@@ -46,9 +48,11 @@ def display_devices():
 
 # Function to set device status
 def set_device_status(id, status):
-    for device in st.session_state.devices:
+    for idx, device in enumerate(st.session_state.devices):
         if device.id == id:
             device.status = status
+            # Reassign the updated device to session state
+            st.session_state.devices[idx] = device
             st.success(f"Device {id} is now {'Online' if status else 'Offline'}.")
             return
     st.error(f"Device with ID {id} not found.")
