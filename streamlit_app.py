@@ -12,21 +12,27 @@ class Device:
 if "devices" not in st.session_state:
     st.session_state.devices = []
 
+# Function to check if a device ID already exists
+def device_exists(id):
+    return any(device.id == id for device in st.session_state.devices)
+
 # Function to add a new device
 def add_device(id, name):
+    if device_exists(id):
+        st.error(f"A device with ID {id} already exists.")
+        return
     if len(st.session_state.devices) >= 100:  # MAX_DEVICES = 100
         st.error("Device limit reached.")
         return
     new_device = Device(id, name)
     st.session_state.devices.append(new_device)
-    st.success(f"Device {name} added successfully.")
+    st.success(f"Device {name} with ID {id} added successfully.")
 
 # Function to update device configuration
 def update_config(id, config):
     for idx, device in enumerate(st.session_state.devices):
         if device.id == id:
             device.config = config
-            # Reassign the updated device to session state
             st.session_state.devices[idx] = device
             st.success(f"Configuration updated for device {id}.")
             return
@@ -51,7 +57,6 @@ def set_device_status(id, status):
     for idx, device in enumerate(st.session_state.devices):
         if device.id == id:
             device.status = status
-            # Reassign the updated device to session state
             st.session_state.devices[idx] = device
             st.success(f"Device {id} is now {'Online' if status else 'Offline'}.")
             return
