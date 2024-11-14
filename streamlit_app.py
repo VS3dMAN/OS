@@ -1,3 +1,5 @@
+import streamlit as st
+
 # Structure to store device information using a class
 class Device:
     def __init__(self, id, name):
@@ -12,85 +14,77 @@ devices = []
 # Function to add a new device
 def add_device(id, name):
     if len(devices) >= 100:  # MAX_DEVICES = 100
-        print("Device limit reached.")
+        st.error("Device limit reached.")
         return
     new_device = Device(id, name)
     devices.append(new_device)
-    print(f"Device {name} added successfully.")
+    st.success(f"Device {name} added successfully.")
 
 # Function to update device configuration
 def update_config(id, config):
     for device in devices:
         if device.id == id:
             device.config = config
-            print(f"Configuration updated for device {id}.")
+            st.success(f"Configuration updated for device {id}.")
             return
-    print(f"Device with ID {id} not found.")
+    st.error(f"Device with ID {id} not found.")
 
 # Function to display all devices
 def display_devices():
-    print("\nDevice List:")
-    print("ID\tName\t\tStatus\t\tConfig")
-    for device in devices:
-        status = "Online" if device.status else "Offline"
-        print(f"{device.id}\t{device.name}\t\t{status}\t\t{device.config}")
+    if not devices:
+        st.warning("No devices to display.")
+        return
+
+    data = [{
+        "ID": device.id,
+        "Name": device.name,
+        "Status": "Online" if device.status else "Offline",
+        "Config": device.config
+    } for device in devices]
+    st.table(data)
 
 # Function to set device status
 def set_device_status(id, status):
     for device in devices:
         if device.id == id:
             device.status = status
-            print(f"Device {id} is now {'Online' if status else 'Offline'}.")
+            st.success(f"Device {id} is now {'Online' if status else 'Offline'}.")
             return
-    print(f"Device with ID {id} not found.")
+    st.error(f"Device with ID {id} not found.")
 
-# Main function for the menu
-def main():
-    while True:
-        print("\nAutomated Device Configuration and Management System")
-        print("1. Add Device")
-        print("2. Update Device Configuration")
-        print("3. Display All Devices")
-        print("4. Set Device Status")
-        print("5. Exit")
-        
-        try:
-            choice = int(input("Enter your choice: "))
-        except ValueError:
-            print("Invalid input. Please enter a number.")
-            continue
+# Streamlit UI
+st.title("Automated Device Configuration and Management System")
 
-        if choice == 1:
-            try:
-                id = int(input("Enter Device ID: "))
-                name = input("Enter Device Name: ")
-                add_device(id, name)
-            except ValueError:
-                print("Invalid input. Device ID must be a number.")
-        elif choice == 2:
-            try:
-                id = int(input("Enter Device ID: "))
-                config = input("Enter New Configuration: ")
-                update_config(id, config)
-            except ValueError:
-                print("Invalid input.")
-        elif choice == 3:
-            display_devices()
-        elif choice == 4:
-            try:
-                id = int(input("Enter Device ID: "))
-                status = int(input("Enter Status (1 for Online, 0 for Offline): "))
-                if status in [0, 1]:
-                    set_device_status(id, status)
-                else:
-                    print("Invalid status. Use 1 for Online or 0 for Offline.")
-            except ValueError:
-                print("Invalid input.")
-        elif choice == 5:
-            print("Exiting program.")
-            break
+menu = ["Add Device", "Update Configuration", "Display Devices", "Set Device Status"]
+choice = st.sidebar.selectbox("Select Action", menu)
+
+if choice == "Add Device":
+    st.subheader("Add a New Device")
+    id = st.number_input("Enter Device ID", min_value=1, step=1)
+    name = st.text_input("Enter Device Name")
+    if st.button("Add Device"):
+        if name:
+            add_device(id, name)
         else:
-            print("Invalid choice.")
+            st.error("Device name cannot be empty.")
 
-if __name__ == "__main__":
-    main()
+elif choice == "Update Configuration":
+    st.subheader("Update Device Configuration")
+    id = st.number_input("Enter Device ID", min_value=1, step=1)
+    config = st.text_input("Enter New Configuration")
+    if st.button("Update Configuration"):
+        if config:
+            update_config(id, config)
+        else:
+            st.error("Configuration cannot be empty.")
+
+elif choice == "Display Devices":
+    st.subheader("Device List")
+    display_devices()
+
+elif choice == "Set Device Status":
+    st.subheader("Set Device Status")
+    id = st.number_input("Enter Device ID", min_value=1, step=1)
+    status = st.radio("Select Status", [1, 0], format_func=lambda x: "Online" if x == 1 else "Offline")
+    if st.button("Set Status"):
+        set_device_status(id, status)
